@@ -4,7 +4,11 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from matcher import recommend_programs, MATCHER_VERSION
+try:
+    from matcher import recommend_programs, MATCHER_VERSION
+except ImportError:
+    from matcher import recommend_programs
+    MATCHER_VERSION = "unknown"
 
 
 # -----------------------------------------------------------------------------
