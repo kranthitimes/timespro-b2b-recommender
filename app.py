@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from matcher import recommend_programs
+from matcher import recommend_programs, MATCHER_VERSION
 
 
 # -----------------------------------------------------------------------------
@@ -711,10 +711,11 @@ if submitted:
 # Footer
 # -----------------------------------------------------------------------------
 st.markdown(
-    """
+    f"""
     <div class="tp-footer">
         TimesPro Enterprise Learning Solutions · Recommendation prototype for B2B solutioning.<br>
-        Programme recommendations should be validated by the TimesPro team before external sharing.
+        Programme recommendations should be validated by the TimesPro team before external sharing.<br>
+        <span style="font-size:0.75rem;color:#9ca3af;">Recommendation engine v{MATCHER_VERSION}</span>
     </div>
     """,
     unsafe_allow_html=True,
