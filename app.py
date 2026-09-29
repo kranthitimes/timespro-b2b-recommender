@@ -11,7 +11,7 @@ from matcher import recommend_programs, MATCHER_VERSION
 # Page configuration
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="TimesPro | Enterprise Learning Solutions",
+    page_title="TimesPro | Part of Times Group",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="collapsed",
