@@ -1,16 +1,10 @@
 import re
 import pandas as pd
 
-MATCHER_VERSION = "3.0"
+MATCHER_VERSION = "4.0"
 
-# -----------------------------------------------------------------------------
-# Query vocabulary
-# -----------------------------------------------------------------------------
 INDUSTRY_ALIASES = {
-    "banking & financial services": [
-        "bfsi", "banking", "financial services", "fintech", "nbfc", "insurance",
-        "capital markets", "investment banking", "wealth management", "asset management"
-    ],
+    "banking & financial services": ["bfsi", "banking", "financial services", "fintech", "nbfc", "insurance", "capital markets", "investment banking", "wealth management", "asset management"],
     "technology / it & ites": ["technology", "it", "ites", "software", "saas", "tech"],
     "manufacturing": ["manufacturing", "industrial", "factory", "production"],
     "consulting & professional services": ["consulting", "professional services", "advisory"],
@@ -23,47 +17,18 @@ INDUSTRY_ALIASES = {
     "government / psu": ["government", "psu", "public sector", "public administration"],
 }
 
-CAPABILITY_ALIASES = {
-    "finance & banking": [
-        "finance", "financial", "banking", "fintech", "cfo", "capital markets",
-        "investment banking", "credit", "risk management", "wealth management",
-        "treasury", "valuation", "corporate finance", "quantitative finance"
-    ],
-    "leadership & general management": [
-        "leadership", "general management", "executive management", "business management",
-        "strategic leadership", "people leadership"
-    ],
-    "artificial intelligence & genai": [
-        "artificial intelligence", "genai", "generative ai", "machine learning", "agentic ai",
-        "ai for business", "ai for leaders"
-    ],
-    "data & analytics": ["data analytics", "business analytics", "data science", "analytics"],
-    "digital transformation": ["digital transformation", "digital strategy", "digital business"],
-    "sales & marketing": ["sales", "marketing", "brand", "digital marketing", "customer experience"],
-    "operations & supply chain": ["operations", "supply chain", "logistics", "procurement"],
-    "project / product management": ["project management", "product management", "product leadership", "agile"],
-    "hr & people leadership": ["human resources", "hr", "chro", "talent management", "people management"],
-    "strategy & business transformation": ["strategy", "business transformation", "corporate strategy", "geopolitics"],
-    "cybersecurity / cloud / technology": ["cybersecurity", "cyber security", "cloud", "technology management"],
-    "sustainability / esg": ["sustainability", "esg", "climate", "green"],
-    "public policy": ["public policy", "governance", "public administration"],
-}
-
-# Terms used to identify the programme's PRIMARY domain.  These deliberately
-# look only at programme name + category, which prevents broad auto-tags from
-# making unrelated programmes appear relevant.
+# These terms are intentionally strict and are checked only against Program Name + Program Category.
 PRIMARY_DOMAIN_TERMS = {
     "finance & banking": [
-        "finance", "financial", "banking", "fintech", "cfo", "capital market",
-        "investment banking", "credit", "wealth", "treasury", "valuation",
-        "quantitative finance", "risk"
+        "finance", "financial", "banking", "fintech", "cfo", "capital market", "investment banking",
+        "credit", "wealth", "treasury", "valuation", "quantitative finance", "risk management"
     ],
     "leadership & general management": [
-        "general management", "business management", "leadership", "cxO leadership".lower(),
-        "executive management", "management development"
+        "leadership", "general management", "executive management", "business leadership",
+        "management development", "cxO leadership".lower()
     ],
     "artificial intelligence & genai": [
-        "artificial intelligence", "generative ai", "gen ai", "genai", "agentic ai", "ai and gen ai", "ai & genai"
+        "artificial intelligence", "generative ai", "gen ai", "genai", "agentic ai", "ai for business", "ai for leaders"
     ],
     "data & analytics": ["data science", "data analytics", "business analytics", "analytics"],
     "digital transformation": ["digital transformation", "digital strategy", "digital business"],
@@ -77,8 +42,15 @@ PRIMARY_DOMAIN_TERMS = {
     "public policy": ["public policy", "public administration", "governance"],
 }
 
+# Specialized domains that should not be mistaken for broad Leadership/General Management.
+LEADERSHIP_EXCLUSIONS = [
+    "healthcare management", "project management", "product management", "supply chain", "fintech",
+    "finance", "banking", "marketing", "sales", "data science", "analytics", "cybersecurity",
+    "public policy", "sustainability", "esg"
+]
+
 SENIORITY_ALIASES = {
-    "early career / individual contributors": ["early career", "individual contributor", "young professional", "entry level"],
+    "early career / individual contributors": ["early career", "individual contributor", "young professional", "entry level", "0-3 years", "0–3 years"],
     "first-time managers": ["first-time manager", "new manager", "team lead"],
     "mid-level managers": ["mid-level", "mid level", "middle management", "manager", "5+ years", "6+ years", "7+ years", "8+ years"],
     "senior leaders": ["senior leader", "senior management", "10+ years", "12+ years", "15+ years", "business head", "functional head"],
@@ -116,7 +88,7 @@ def _text(row, columns):
 def _has(text, terms):
     text = _clean(text)
     hits = []
-    for term in terms:
+    for term in terms or []:
         term = _clean(term)
         if term and term in text:
             hits.append(term)
@@ -137,16 +109,32 @@ def _expanded(values, mapping):
 
 
 def _primary_capability_match(row, selected_capabilities):
-    """Match capability against programme name/category only."""
     primary_text = _text(row, ["Program Name", "Programme Name", "Program Category", "Programme Category", "Category"])
-    matched_labels = []
+    matched = []
     for cap in selected_capabilities or []:
         key = _clean(cap)
         terms = PRIMARY_DOMAIN_TERMS.get(key, [key])
         hit, _ = _has(primary_text, terms)
-        if hit:
-            matched_labels.append(cap)
-    return bool(matched_labels), matched_labels
+        if not hit:
+            continue
+        # Broad leadership should not be inferred from specialized management programmes.
+        if key == "leadership & general management":
+            exclusion_hit, _ = _has(primary_text, LEADERSHIP_EXCLUSIONS)
+            explicit_leadership_hit, _ = _has(primary_text, ["leadership", "general management", "executive management", "business leadership", "management development", "cxo leadership"])
+            if exclusion_hit and not explicit_leadership_hit:
+                continue
+        matched.append(cap)
+    return bool(matched), matched
+
+
+def _industry_match(row, selected_industry):
+    if not selected_industry or _clean(selected_industry) == "other":
+        return True, False
+    tags = _text(row, ["Industry Tags", "Industry", "Relevant Industries"])
+    terms = _expanded(selected_industry, INDUSTRY_ALIASES)
+    direct, _ = _has(tags, terms)
+    universal, _ = _has(tags, ["cross-industry", "cross industry", "all industries", "industry agnostic"])
+    return direct or universal, direct
 
 
 def _duration_match(value, requested):
@@ -171,14 +159,13 @@ def _duration_match(value, requested):
 
 
 def recommend_programs(df, requirements, top_n=8):
-    """
-    TimesPro B2B recommendation engine v3.0.
+    """TimesPro B2B recommendation engine v4.0.
 
-    Key principle:
-    When the buyer explicitly chooses a capability, PRIMARY capability relevance
-    (programme name/category) is mandatory. This prevents programmes such as
-    Healthcare Management from appearing for Finance & Banking simply because
-    the learner seniority matches.
+    Rules:
+    1) If capability is selected, programme name/category must genuinely match that capability.
+    2) If industry is selected, programme must be either explicitly relevant to that industry or tagged Cross-industry.
+    3) Broad auto-generated Capability Tags never qualify a programme by themselves.
+    4) Audience/outcome/mode/duration only rank programmes after relevance gates are passed.
     """
     data = df.copy()
 
@@ -190,116 +177,87 @@ def recommend_programs(df, requirements, top_n=8):
     duration_q = requirements.get("duration", "")
     challenge_q = requirements.get("challenge", "")
 
-    industry_terms = _expanded(industry_q, INDUSTRY_ALIASES)
-    capability_terms = _expanded(capabilities_q, CAPABILITY_ALIASES)
     audience_terms = _expanded(audience_q, SENIORITY_ALIASES)
     outcome_terms = _expanded(outcomes_q, BUSINESS_OUTCOME_ALIASES)
     mode_terms = [_clean(x) for x in modes_q]
 
     rows = []
-
     for _, row in data.iterrows():
         primary_cap_hit, primary_cap_labels = _primary_capability_match(row, capabilities_q)
+        industry_allowed, direct_industry_hit = _industry_match(row, industry_q)
 
-        industry_text = _text(row, [
-            "Industry Tags", "Industry", "Relevant Industries", "Program Name", "Program Category"
-        ])
-        capability_support_text = _text(row, [
-            "Capability Tags", "Program Name", "Program Category", "Target Audience"
-        ])
-        audience_text = _text(row, [
-            "Seniority Tags", "Target Audience", "Work Experience", "Eligibility"
-        ])
-        outcome_text = _text(row, [
-            "Business Outcome Tags", "Target Audience", "Program Name", "Program Category"
-        ])
+        # Mandatory relevance gates
+        if capabilities_q and not primary_cap_hit:
+            continue
+        if industry_q and _clean(industry_q) != "other" and not industry_allowed:
+            continue
+
+        audience_text = _text(row, ["Seniority Tags", "Target Audience", "Work Experience", "Eligibility"])
+        outcome_text = _text(row, ["Business Outcome Tags", "Target Audience", "Program Name", "Program Category"])
         mode_text = _text(row, ["Mode", "Delivery Mode", "Learning Format"])
         duration_text = _text(row, ["Duration (Months)", "Duration", "Duration (in months)"])
 
-        industry_hit, _ = _has(industry_text, industry_terms)
-        supporting_cap_hit, _ = _has(capability_support_text, capability_terms)
         audience_hit, _ = _has(audience_text, audience_terms)
         outcome_hit, _ = _has(outcome_text, outcome_terms)
         mode_hit, _ = _has(mode_text, mode_terms)
         duration_hit = _duration_match(duration_text, duration_q)
 
-        # HARD GATE: explicit capability selection requires genuine primary-domain fit.
-        if capabilities_q and not primary_cap_hit:
-            continue
-
-        # If no capability was selected, at least industry relevance is needed.
-        if not capabilities_q and industry_q and not industry_hit:
-            continue
-
         score = 0.0
         reasons = []
 
-        # Primary capability is the dominant factor.
         if primary_cap_hit:
-            score += 45
+            score += 50
             reasons.append("direct match to the selected capability")
-        elif supporting_cap_hit:
-            score += 25
-            reasons.append("related capability fit")
 
-        if industry_hit:
+        if direct_industry_hit:
             score += 25
-            reasons.append(f"relevant to {industry_q}")
+            reasons.append(f"directly relevant to {industry_q}")
+        elif industry_allowed and industry_q:
+            score += 12
+            reasons.append("applicable across industries")
 
         if audience_hit:
             score += 15
             reasons.append("fits the target learner profile")
 
         if outcome_hit:
-            score += 8
+            score += 6
             reasons.append("supports the selected business outcome")
 
         if mode_hit:
-            score += 3
+            score += 2
             reasons.append("matches the preferred learning format")
 
         if duration_hit:
-            score += 4
+            score += 2
             reasons.append("fits the preferred duration")
 
-        # Light free-text bonus only after the hard relevance gate.
-        if challenge_q:
-            challenge_words = {w for w in re.findall(r"[a-zA-Z]{5,}", _clean(challenge_q))}
-            programme_text = " ".join([
-                _text(row, ["Program Name", "Program Category", "Target Audience", "Capability Tags", "Business Outcome Tags"])
-            ])
-            overlap = [w for w in challenge_words if w in programme_text]
-            if overlap:
-                score += min(5, len(overlap))
-                reasons.append("aligns with the described business challenge")
+        # Free-text challenge only acts as a small tie-breaker.
+        challenge_words = {w for w in re.findall(r"[a-zA-Z]{5,}", _clean(challenge_q))}
+        primary_text = _text(row, ["Program Name", "Program Category", "Target Audience"])
+        programme_words = {w for w in re.findall(r"[a-zA-Z]{5,}", primary_text)}
+        overlap = challenge_words & programme_words
+        if overlap:
+            score += min(3, len(overlap))
+            reasons.append("aligns with the stated challenge")
 
-        # Small bonus when the curated capability tags also agree with primary domain.
-        if primary_cap_hit and supporting_cap_hit:
-            score += 3
-
-        out = row.to_dict()
-        out["_score"] = round(min(score, 100), 1)
-        out["_rationale"] = "; ".join(dict.fromkeys(reasons)).capitalize() + "."
-        out["_industry_match"] = industry_hit
-        out["_capability_match"] = primary_cap_hit
-        rows.append(out)
+        score = min(round(score), 100)
+        item = row.copy()
+        item["_score"] = score
+        item["_rationale"] = "; ".join(reasons).capitalize() + "."
+        item["_matched_capabilities"] = ", ".join(primary_cap_labels)
+        rows.append(item)
 
     if not rows:
-        return pd.DataFrame(columns=list(data.columns) + ["_score", "_rationale", "_industry_match", "_capability_match"])
+        return pd.DataFrame(columns=list(data.columns) + ["_score", "_rationale", "_matched_capabilities"])
 
     result = pd.DataFrame(rows)
 
-    # Keep only live/open programmes where a status field exists.
-    for status_col in ["Status", "Program Status", "Programme Status", "Live Status"]:
+    for status_col in ["Status", "Program Status", "Live Status"]:
         if status_col in result.columns:
-            status = result[status_col].astype(str).str.lower().str.strip()
-            live_mask = status.isin(["live", "active", "open", "yes", "currently live"])
+            live_mask = result[status_col].astype(str).str.strip().str.lower().isin(["live", "active", "open", "yes"])
             if live_mask.any():
                 result = result[live_mask]
             break
 
-    return (
-        result.sort_values(["_score", "_industry_match"], ascending=[False, False])
-              .head(top_n)
-              .reset_index(drop=True)
-    )
+    return result.sort_values(["_score", "Program Name"], ascending=[False, True]).head(top_n).reset_index(drop=True)
