@@ -15,7 +15,7 @@ except ImportError:
 # Page configuration
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="TimesPro | Part of Times Group",
+    page_title="TimesPro B2B Recommender",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="collapsed",
