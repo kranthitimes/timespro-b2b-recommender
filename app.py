@@ -248,10 +248,10 @@ if brand_icon.exists():
         st.image(str(brand_icon), width=72)
     with text_col:
         st.markdown('<div class="brand-kicker">TimesPro Enterprise</div>', unsafe_allow_html=True)
-        st.title("Learning Programme Recommender")
+        st.title("TimesPro Enterprise Programs for Upskilling")
 else:
     st.markdown('<div class="brand-kicker">TimesPro Enterprise</div>', unsafe_allow_html=True)
-    st.title("Learning Programme Recommender")
+    st.title("TimesPro Enterprise Programs for Upskilling")
 
 st.markdown(
     '<div class="subtle">Identify relevant TimesPro programmes based on your client’s industry, workforce profile and capability priorities.</div>',
