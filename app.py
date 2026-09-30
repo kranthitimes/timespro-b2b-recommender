@@ -254,7 +254,7 @@ else:
     logo_col, title_col = st.columns([1, 8], vertical_alignment="center")
 
 with logo_col:
-    st.image("assets/timespro_logo.png", width=95)
+    st.image(".assets/timespro_logo.png", width=95)
 
 with title_col:
     st.markdown(
