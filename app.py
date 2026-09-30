@@ -18,6 +18,137 @@ st.set_page_config(
 st.markdown(
     '''
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+html, body, .stApp,
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+.stMarkdown,
+input,
+textarea,
+button,
+select {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+/* Main page title */
+h1 {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 2.15rem !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.03em !important;
+    color: #222222 !important;
+}
+
+/* Section headings */
+h2 {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 1.55rem !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.02em !important;
+    color: #222222 !important;
+}
+
+/* Smaller headings */
+h3, h4 {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 600 !important;
+    color: #222222 !important;
+}
+
+/* Body copy */
+p,
+.stMarkdown,
+.stCaption {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 400 !important;
+    line-height: 1.55 !important;
+}
+
+/* Form labels */
+[data-testid="stWidgetLabel"] p {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+}
+
+/* Input / dropdown text */
+input,
+textarea,
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] div {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 400 !important;
+    font-size: 0.93rem !important;
+}
+
+/* Multiselect tags */
+span[data-baseweb="tag"] {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 0.84rem !important;
+}
+
+/* Primary and secondary buttons */
+div.stButton > button,
+div.stFormSubmitButton > button,
+div.stDownloadButton > button,
+div[data-testid="stLinkButton"] a {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+}
+
+/* TimesPro eyebrow label */
+.brand-kicker {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+/* Intro / secondary text */
+.subtle {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 0.94rem;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+/* Programme result title */
+.program-title {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 1.12rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #222222;
+}
+
+/* Programme metadata */
+.program-meta {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 0.84rem;
+    font-weight: 400;
+    color: #6B7280;
+}
+
+/* Match badge */
+.match-pill {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* Duration / fee pills */
+.detail-pill {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
         :root {
             --tp-red: #E31E24;
             --tp-red-dark: #C8171C;
