@@ -429,13 +429,13 @@ if brand_icon.exists():
             '<div class="brand-kicker">TimesPro Enterprise</div>',
             unsafe_allow_html=True,
         )
-        st.title("Enterprise Learning Programme Recommender")
+        st.title("Executive Education Programme Recommendation Tool")
 else:
     st.markdown(
         '<div class="brand-kicker">TimesPro Enterprise</div>',
         unsafe_allow_html=True,
     )
-    st.title("Enterprise Learning Programme Recommender")
+    st.title("Executive Education Programme Recommendation Tool")
 
 st.markdown(
     '''
