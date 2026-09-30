@@ -240,7 +240,7 @@ df = load_program_data()
 # ---------------------------------------------------------
 # Header
 # ---------------------------------------------------------
-brand_icon = Path("assets/timespro_app_icon.png")
+brand_icon = Path(".assets/timespro_logo.png")
 
 if brand_icon.exists():
     icon_col, text_col = st.columns([1, 10], vertical_alignment="center")
