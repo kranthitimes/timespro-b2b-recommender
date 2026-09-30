@@ -450,7 +450,7 @@ st.markdown(
 st.markdown('<div class="brand-line"></div>', unsafe_allow_html=True)
 
 st.subheader("Tell us what your organisation needs")
-st.caption("Enter the client context below to build a focused learning portfolio.")
+st.caption("Enter the details below to build a focused learning portfolio.")
 
 with st.form("discovery_form"):
     left, right = st.columns(2, gap="large")
