@@ -10,7 +10,7 @@ except ImportError:
 
 st.set_page_config(
     page_title="TimesPro B2B Recommender",
-    page_icon=".assets/ChatGPT Image Sep 29, 2026, 03_09_12 PM.png",
+    page_icon="🎓",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
