@@ -381,7 +381,7 @@ div[data-testid="stLinkButton"] a {
     unsafe_allow_html=True,
 )
 
-@st.cache_data
+
 def load_program_data():
     path = Path("data/program_master.xlsx")
     if path.exists():
